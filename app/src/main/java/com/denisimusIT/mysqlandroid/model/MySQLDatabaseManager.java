@@ -8,11 +8,11 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
-@RequiresApi(api = Build.VERSION_CODES.KITKAT)
+
 public class MySQLDatabaseManager implements DatabaseManager {
 
     private Connection connection;
-    private final static String NEW_LINE = System.lineSeparator();
+    private final static String NEW_LINE = "\n";
 
 
     @Override
@@ -66,6 +66,7 @@ public class MySQLDatabaseManager implements DatabaseManager {
                     "(" + columnsValues + ")";
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
+            System.err.println(e.getMessage().toString());
             e.printStackTrace(); //TODO собщение об ошибке
         }
 
@@ -161,7 +162,7 @@ public class MySQLDatabaseManager implements DatabaseManager {
                     "AND table_type='BASE TABLE'");
             List<String> tables = new LinkedList<>();
             while (rs.next()) {
-                tables.add(rs.getString("table_name"));
+                tables.add(rs.getString("TABLE_NAME"));
             }
             return tables;
         } catch (SQLException e) {
@@ -184,6 +185,7 @@ public class MySQLDatabaseManager implements DatabaseManager {
             String sql = "INSERT INTO " + tableName + "(" + columnName + ")" + "VALUES (" + values + ")";
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
+            System.err.println(e.getMessage());
             e.printStackTrace(); //TODO собщение об ошибке
         }
 
