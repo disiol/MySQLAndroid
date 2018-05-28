@@ -1,18 +1,22 @@
 package com.denisimusIT.mysqlandroid.model;
 
 
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import android.util.Log;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-
 
 public class MySQLDatabaseManager implements DatabaseManager {
 
     private Connection connection;
-    private final static String NEW_LINE = "\n";
+    private final static String NEW_LINE = System.lineSeparator();
 
 
     @Override
@@ -25,20 +29,21 @@ public class MySQLDatabaseManager implements DatabaseManager {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
+            System.err.println("!! " + e.getMessage());
             throw new RuntimeException("Please add jdbc jar to project.", e);
 
         }
         try {
-            //TODO вынести в функцыю
             String hostnamePort = "sbjornal.mysql.ukraine.com.ua";
             connection = DriverManager.getConnection(
                     "jdbc:mysql://" + hostnamePort + "/" + databaseName, userName, password);
         } catch (SQLException e) {
             connection = null;
 
-            throw new RuntimeException(
-                    String.format("Cant get connection for model:%s user:%s", databaseName, userName), e);
+            Log.d("MyLog", "connectToDatabase: " + e.getMessage());
 
+            throw new RuntimeException(
+            String.format("Cant get connection for model:%s user:%s", databaseName, userName),e);
         }
 
     }
@@ -66,7 +71,6 @@ public class MySQLDatabaseManager implements DatabaseManager {
                     "(" + columnsValues + ")";
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
-            System.err.println(e.getMessage().toString());
             e.printStackTrace(); //TODO собщение об ошибке
         }
 
@@ -162,7 +166,7 @@ public class MySQLDatabaseManager implements DatabaseManager {
                     "AND table_type='BASE TABLE'");
             List<String> tables = new LinkedList<>();
             while (rs.next()) {
-                tables.add(rs.getString("TABLE_NAME"));
+                tables.add(rs.getString("table_name"));
             }
             return tables;
         } catch (SQLException e) {
@@ -185,7 +189,6 @@ public class MySQLDatabaseManager implements DatabaseManager {
             String sql = "INSERT INTO " + tableName + "(" + columnName + ")" + "VALUES (" + values + ")";
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
             e.printStackTrace(); //TODO собщение об ошибке
         }
 
@@ -345,8 +348,7 @@ public class MySQLDatabaseManager implements DatabaseManager {
     public List<String> getTableColumns(String tableName) {
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery("SELECT * FROM information_schema.columns WHERE table_schema='public' " +
-                     "AND table_name='" + tableName + "'"))
-        {
+                     "AND table_name='" + tableName + "'")) {
 
             List<String> tables = new LinkedList<>();
             while (rs.next()) {
